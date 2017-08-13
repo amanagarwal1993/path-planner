@@ -1,17 +1,18 @@
 //
-//  Trajectory.hpp
-//  
+//  Trajectory.h
+//
 //
 //  Created by Aman Agarwal on 13/08/17.
 //
 //
 
-#ifndef Trajectory_hpp
-#define Trajectory_hpp
+#ifndef Trajectory_h
+#define Trajectory_h
 
 #include <stdio.h>
 #include <iostream>
 #include <vector>
+#include <math.h>
 #include <uWS/uWS.h>
 constexpr double pi() { return M_PI; }
 #endif /* Trajectory_hpp */

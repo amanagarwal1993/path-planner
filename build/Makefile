@@ -123,6 +123,33 @@ path_planning/fast:
 	$(MAKE) -f CMakeFiles/path_planning.dir/build.make CMakeFiles/path_planning.dir/build
 .PHONY : path_planning/fast
 
+src/Trajectory.o: src/Trajectory.cpp.o
+
+.PHONY : src/Trajectory.o
+
+# target to build an object file
+src/Trajectory.cpp.o:
+	$(MAKE) -f CMakeFiles/path_planning.dir/build.make CMakeFiles/path_planning.dir/src/Trajectory.cpp.o
+.PHONY : src/Trajectory.cpp.o
+
+src/Trajectory.i: src/Trajectory.cpp.i
+
+.PHONY : src/Trajectory.i
+
+# target to preprocess a source file
+src/Trajectory.cpp.i:
+	$(MAKE) -f CMakeFiles/path_planning.dir/build.make CMakeFiles/path_planning.dir/src/Trajectory.cpp.i
+.PHONY : src/Trajectory.cpp.i
+
+src/Trajectory.s: src/Trajectory.cpp.s
+
+.PHONY : src/Trajectory.s
+
+# target to generate assembly for a file
+src/Trajectory.cpp.s:
+	$(MAKE) -f CMakeFiles/path_planning.dir/build.make CMakeFiles/path_planning.dir/src/Trajectory.cpp.s
+.PHONY : src/Trajectory.cpp.s
+
 src/main.o: src/main.cpp.o
 
 .PHONY : src/main.o
@@ -159,6 +186,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... path_planning"
+	@echo "... src/Trajectory.o"
+	@echo "... src/Trajectory.i"
+	@echo "... src/Trajectory.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"

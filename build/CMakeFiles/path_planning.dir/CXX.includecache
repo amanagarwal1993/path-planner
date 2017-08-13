@@ -772,12 +772,18 @@ lapacke_mangling.h
 
 /Users/amanagarwal/Documents/PROGRAMMING/CarND/Term-3/CarND-Path-Planning-Project/src/Eigen-3.3/Eigen/src/plugins/MatrixCwiseUnaryOps.h
 
-/Users/amanagarwal/Documents/PROGRAMMING/CarND/Term-3/CarND-Path-Planning-Project/src/Trajectory.hpp
+/Users/amanagarwal/Documents/PROGRAMMING/CarND/Term-3/CarND-Path-Planning-Project/src/Trajectory.cpp
+Trajectory.h
+/Users/amanagarwal/Documents/PROGRAMMING/CarND/Term-3/CarND-Path-Planning-Project/src/Trajectory.h
+
+/Users/amanagarwal/Documents/PROGRAMMING/CarND/Term-3/CarND-Path-Planning-Project/src/Trajectory.h
 stdio.h
 -
 iostream
 -
 vector
+-
+math.h
 -
 uWS/uWS.h
 -
@@ -841,8 +847,6 @@ vector
 /Users/amanagarwal/Documents/PROGRAMMING/CarND/Term-3/CarND-Path-Planning-Project/src/main.cpp
 fstream
 -
-math.h
--
 uWS/uWS.h
 -
 chrono
@@ -859,8 +863,8 @@ Eigen-3.3/Eigen/QR
 /Users/amanagarwal/Documents/PROGRAMMING/CarND/Term-3/CarND-Path-Planning-Project/src/Eigen-3.3/Eigen/QR
 json.hpp
 /Users/amanagarwal/Documents/PROGRAMMING/CarND/Term-3/CarND-Path-Planning-Project/src/json.hpp
-Trajectory.hpp
-/Users/amanagarwal/Documents/PROGRAMMING/CarND/Term-3/CarND-Path-Planning-Project/src/Trajectory.hpp
+Trajectory.h
+/Users/amanagarwal/Documents/PROGRAMMING/CarND/Term-3/CarND-Path-Planning-Project/src/Trajectory.h
 
 /usr/local/include/pthread-barrier.h
 errno.h
