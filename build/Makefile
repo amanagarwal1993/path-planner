@@ -123,6 +123,33 @@ path_planning/fast:
 	$(MAKE) -f CMakeFiles/path_planning.dir/build.make CMakeFiles/path_planning.dir/build
 .PHONY : path_planning/fast
 
+src/Prediction.o: src/Prediction.cpp.o
+
+.PHONY : src/Prediction.o
+
+# target to build an object file
+src/Prediction.cpp.o:
+	$(MAKE) -f CMakeFiles/path_planning.dir/build.make CMakeFiles/path_planning.dir/src/Prediction.cpp.o
+.PHONY : src/Prediction.cpp.o
+
+src/Prediction.i: src/Prediction.cpp.i
+
+.PHONY : src/Prediction.i
+
+# target to preprocess a source file
+src/Prediction.cpp.i:
+	$(MAKE) -f CMakeFiles/path_planning.dir/build.make CMakeFiles/path_planning.dir/src/Prediction.cpp.i
+.PHONY : src/Prediction.cpp.i
+
+src/Prediction.s: src/Prediction.cpp.s
+
+.PHONY : src/Prediction.s
+
+# target to generate assembly for a file
+src/Prediction.cpp.s:
+	$(MAKE) -f CMakeFiles/path_planning.dir/build.make CMakeFiles/path_planning.dir/src/Prediction.cpp.s
+.PHONY : src/Prediction.cpp.s
+
 src/Trajectory.o: src/Trajectory.cpp.o
 
 .PHONY : src/Trajectory.o
@@ -186,6 +213,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... path_planning"
+	@echo "... src/Prediction.o"
+	@echo "... src/Prediction.i"
+	@echo "... src/Prediction.s"
 	@echo "... src/Trajectory.o"
 	@echo "... src/Trajectory.i"
 	@echo "... src/Trajectory.s"

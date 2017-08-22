@@ -4,9 +4,8 @@
 #include <iostream>
 #include <thread>
 #include <vector>
-#include "Eigen-3.3/Eigen/Core"
-#include "Eigen-3.3/Eigen/QR"
 #include "json.hpp"
+#include "Prediction.h"
 #include "Trajectory.h"
 
 using namespace std;
@@ -33,103 +32,32 @@ string hasData(string s) {
   return "";
 }
 
-double distance(double x1, double y1, double x2, double y2)
-{
-	return sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
+int currentLane(double car_d) {
+  if (car_d > 0.0 && car_d <= 4.0) {
+    return 0;
+  }
+  else if (car_d <= 8.0) {
+    return 1;
+  }
+  else if (car_d > 8.0) {
+    return 2;
+  }
+  else return -1;
 }
 
-int ClosestWaypoint(double x, double y, vector<double> maps_x, vector<double> maps_y)
-{
+// Cars available to switch to (i.e legal)
+vector< int > availableLanes(double car_d) {
+  if (car_d > 0.0 && car_d <= 4.0) {
+    return {1};
+  }
+  else if (car_d <= 8.0) {
+    return {0,2};
+  }
+  else if (car_d > 8.0) {
+    return {1};
+  }
+};
 
-	double closestLen = 100000; //large number
-	int closestWaypoint = 0;
-
-	for(int i = 0; i < maps_x.size(); i++)
-	{
-		double map_x = maps_x[i];
-		double map_y = maps_y[i];
-		double dist = distance(x,y,map_x,map_y);
-		if(dist < closestLen)
-		{
-			closestLen = dist;
-			closestWaypoint = i;
-		}
-
-	}
-
-	return closestWaypoint;
-
-}
-
-int NextWaypoint(double x, double y, double theta, vector<double> maps_x, vector<double> maps_y)
-{
-
-	int closestWaypoint = ClosestWaypoint(x,y,maps_x,maps_y);
-
-	double map_x = maps_x[closestWaypoint];
-	double map_y = maps_y[closestWaypoint];
-
-	double heading = atan2( (map_y-y),(map_x-x) );
-
-	double angle = abs(theta-heading);
-
-	if(angle > pi()/4)
-	{
-		closestWaypoint++;
-	}
-
-	return closestWaypoint;
-
-}
-
-// Transform from Cartesian x,y coordinates to Frenet s,d coordinates
-vector<double> getFrenet(double x, double y, double theta, vector<double> maps_x, vector<double> maps_y)
-{
-	int next_wp = NextWaypoint(x,y, theta, maps_x,maps_y);
-
-	int prev_wp;
-	prev_wp = next_wp-1;
-	if(next_wp == 0)
-	{
-		prev_wp  = maps_x.size()-1;
-	}
-
-	double n_x = maps_x[next_wp]-maps_x[prev_wp];
-	double n_y = maps_y[next_wp]-maps_y[prev_wp];
-	double x_x = x - maps_x[prev_wp];
-	double x_y = y - maps_y[prev_wp];
-
-	// find the projection of x onto n
-	double proj_norm = (x_x*n_x+x_y*n_y)/(n_x*n_x+n_y*n_y);
-	double proj_x = proj_norm*n_x;
-	double proj_y = proj_norm*n_y;
-
-	double frenet_d = distance(x_x,x_y,proj_x,proj_y);
-
-	//see if d value is positive or negative by comparing it to a center point
-
-	double center_x = 1000-maps_x[prev_wp];
-	double center_y = 2000-maps_y[prev_wp];
-	double centerToPos = distance(center_x,center_y,x_x,x_y);
-	double centerToRef = distance(center_x,center_y,proj_x,proj_y);
-
-	if(centerToPos <= centerToRef)
-	{
-		frenet_d *= -1;
-	}
-
-	// calculate s value
-	double frenet_s = 0;
-	for(int i = 0; i < prev_wp; i++)
-	{
-		frenet_s += distance(maps_x[i],maps_y[i],maps_x[i+1],maps_y[i+1]);
-	}
-
-	frenet_s += distance(0,0,proj_x,proj_y);
-
-	return {frenet_s,frenet_d};
-
-}
 
 int main() {
   uWS::Hub h;
@@ -169,8 +97,13 @@ int main() {
   }
   
   TP trajectory_planner;
-
-  h.onMessage([&trajectory_planner,&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,&map_waypoints_dx,&map_waypoints_dy](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
+  
+  double target_speed = 0.0;
+  bool prepare_for_turn = false;
+  string plan = "keep";
+  int previous_lane = 0;
+  
+  h.onMessage([&trajectory_planner,&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,&map_waypoints_dx,&map_waypoints_dy, &target_speed, &plan, &prepare_for_turn, &previous_lane](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                      uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
@@ -197,12 +130,12 @@ int main() {
           double car_yaw = j[1]["yaw"];
           double car_speed = j[1]["speed"];
           
-          car_speed = metersPerSecond(car_speed);
+          car_yaw = deg2rad(car_yaw);
+          car_speed = TP::metersPerSecond(car_speed);
 
           // Previous path data given to the Planner
           auto previous_path_x = j[1]["previous_path_x"];
           auto previous_path_y = j[1]["previous_path_y"];
-          
           
           // Previous path's end s and d values 
           double end_path_s = j[1]["end_path_s"];
@@ -212,17 +145,137 @@ int main() {
           auto sensor_fusion = j[1]["sensor_fusion"];
           int n_cars = sensor_fusion.size();
           
+          
           json msgJson;
 
           vector<double> next_x_vals;
           vector<double> next_y_vals;
+          vector< vector<double> > next;
           
-          double target_speed = 25.0;
+          // Prediction
+          Oracle oracle;
+          oracle.predict(sensor_fusion, car_x, car_y, car_s, car_d, car_yaw, car_speed, map_waypoints_x, map_waypoints_y);
+          
+          
+          // Behavior module begins
+          // Objectives:
+          // 1) Maintain target speed
+          // 2) Avoid collisions from left, right, ahead and behind.
+          
+          vector< vector<Car> > lanes = oracle.predictions();
+          
+          int this_lane = currentLane(car_d);
+          auto available_lanes = availableLanes(car_d);
+          
+          auto leaders = oracle.leading_cars();
+          
+           //Check previous plan
+          if (plan == "turnRight" && car_d < (1.5 + previous_lane*4.0)) {
+            plan = "turnRight";
+          }
+          else if (plan == "turnLeft" && car_d > (previous_lane*4.0 - 1.0)) {
+            plan = "turnLeft";
+          }
+          else {
+            previous_lane = this_lane;
+            
+            // If the leading vehicle is too far ahead or fast enough, go at speed limit
+            if ((abs(leaders[this_lane].s - car_s) >= 25.0) || (leaders[this_lane].speed > 45.0)) {
+              // Go at speed limit
+              cout << "Go full speed!" << endl;
+              trajectory_planner.roadspeed = 50.0;
+              prepare_for_turn = false;
+              plan = "keep";
+            }
+            else {
+              trajectory_planner.roadspeed = leaders[this_lane].speed / 0.447;
+              // Check which is fastest
+              //cout << "Consider turning..." << endl;
+              int high_speed_lane = this_lane;
+              for (int i=0; i<available_lanes.size(); i++) {
+                if (oracle.leading_cars()[available_lanes[i]].speed > leaders[high_speed_lane].speed) {
+                  high_speed_lane = available_lanes[i];
+                }
+              }
+              
+              cout << "Fastest lane: " << high_speed_lane << endl;
+              
+              // If current lane is still the fastest lane
+              if (high_speed_lane == this_lane) {
+                cout << "Just stay in lane." << endl;
+                prepare_for_turn = false;
+                plan = "keep";
+              }
+              // Must change lane
+              else {
+                prepare_for_turn = true;
+                bool gap_open = true;
+                
+                // High speed lane is empty
+                if (lanes[high_speed_lane].size() == 0) {
+                  cout << "Fastest lane is empty! Turn!" << endl;
+                  if (high_speed_lane < this_lane) {
+                    plan = "turnLeft";
+                    cout << "Turn Left" << endl;
+                  }
+                  else {
+                    plan = "turnRight";
+                    cout << "Turn Right" << endl;
+                  }
+                }
+                //
+                else {
+                  cout << "Fastest lane isn't empty, wait for gap to open" << endl;
+                  // car's rough position after 4 seconds
+                  double future_s1 = car_s + (car_speed * 2.0);
+                  double future_s2 = car_s + (car_speed * 4.0);
+                  
+                  for (int k=0; k < lanes[high_speed_lane].size(); k++) {
+                    Car other = lanes[high_speed_lane][k];
+                    if (abs(other.s - car_s) < 25.0 || abs(other.sec4[0] - future_s2) < 25.0 || abs(other.sec2[0] - future_s1) < 25.0) {
+                      gap_open = false;
+                    }
+                  }
+                  // Make the new plan
+                  if (gap_open) {
+                    if (high_speed_lane < this_lane) {
+                      plan = "turnLeft";
+                      cout << "Turn Left" << endl;
+                    }
+                    else {
+                      plan = "turnRight";
+                      cout << "Turn Right" << endl;
+                    }
+                  } else {
+                    cout << "Gap not open, will stay here" << endl;
+                    plan = "keep";
+                  }
+                }
+              }
+            }
+          }
+          
+          //cout << "Plan: " << plan << endl;
+          //cout << "Left lane: " << leaders[0].speed/0.447 << " Center lane: " << leaders[1].speed/0.447 << " Right lane: " << leaders[2].speed/0.447 << endl;
+          
+          if (car_speed / 0.447 > trajectory_planner.roadspeed - 8.5) {
+            target_speed -= 0.05;
+          }
+          if (car_speed / 0.447 < trajectory_planner.roadspeed - 10.0) {
+            target_speed += 0.1;
+          }
           
           trajectory_planner.Update(car_x, car_y, car_s, car_d, car_yaw, car_speed, target_speed, previous_path_x, previous_path_y, map_waypoints_s, map_waypoints_x, map_waypoints_y);
           
-          vector< vector<double> > next;
-          next = trajectory_planner.executePlan("keep");
+          next = trajectory_planner.executePlan(plan);
+          
+          
+          /*
+          for (int i=0; i< next[0].size(); i++) {
+            cout << next[0][i] << " " << next[1][i] << endl;
+          }
+          cout << "\n" << endl;
+          */
           
           next_x_vals = next[0];
           next_y_vals = next[1];
@@ -278,83 +331,3 @@ int main() {
   }
   h.run();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
