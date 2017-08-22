@@ -263,9 +263,9 @@ int main() {
           //cout << "Left lane: " << leaders[0].speed/0.447 << " Center lane: " << leaders[1].speed/0.447 << " Right lane: " << leaders[2].speed/0.447 << endl;
           
           if (car_speed / 0.447 >= trajectory_planner.roadspeed - 10.0) {
-            target_speed -= 0.05;
+            target_speed -= 0.2;
           }
-          if (car_speed / 0.447 < trajectory_planner.roadspeed - 11.0) {
+          if (car_speed / 0.447 < trajectory_planner.roadspeed - 12.0) {
             target_speed += 0.1;
           }
           
