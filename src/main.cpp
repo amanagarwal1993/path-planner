@@ -214,6 +214,8 @@ int main() {
                 // High speed lane is empty
                 if (lanes[high_speed_lane].size() == 0) {
                   cout << "Fastest lane is empty! Turn!" << endl;
+                  trajectory_planner.roadspeed = 45.0 / 0.447;
+
                   if (high_speed_lane < this_lane) {
                     plan = "turnLeft";
                     cout << "Turn Left" << endl;
@@ -232,12 +234,14 @@ int main() {
                   
                   for (int k=0; k < lanes[high_speed_lane].size(); k++) {
                     Car other = lanes[high_speed_lane][k];
-                    if (abs(other.s - car_s) < 25.0 || abs(other.sec4[0] - future_s2) < 25.0 || abs(other.sec2[0] - future_s1) < 25.0) {
+                    if (abs(other.s - car_s) < 15.0 || abs(other.sec4[0] - future_s2) < 15.0 || abs(other.sec2[0] - future_s1) < 15.0) {
                       gap_open = false;
                     }
                   }
                   // Make the new plan
                   if (gap_open) {
+                    trajectory_planner.roadspeed = leaders[high_speed_lane].speed / 0.447;
+
                     if (high_speed_lane < this_lane) {
                       plan = "turnLeft";
                       cout << "Turn Left" << endl;
@@ -247,7 +251,7 @@ int main() {
                       cout << "Turn Right" << endl;
                     }
                   } else {
-                    cout << "Gap not open, will stay here" << endl;
+                    cout << "Can't turn yet, another car within 15m" << endl;
                     plan = "keep";
                   }
                 }
@@ -258,10 +262,10 @@ int main() {
           //cout << "Plan: " << plan << endl;
           //cout << "Left lane: " << leaders[0].speed/0.447 << " Center lane: " << leaders[1].speed/0.447 << " Right lane: " << leaders[2].speed/0.447 << endl;
           
-          if (car_speed / 0.447 > trajectory_planner.roadspeed - 8.5) {
+          if (car_speed / 0.447 >= trajectory_planner.roadspeed - 9.0) {
             target_speed -= 0.05;
           }
-          if (car_speed / 0.447 < trajectory_planner.roadspeed - 10.0) {
+          if (car_speed / 0.447 < trajectory_planner.roadspeed - 11.0) {
             target_speed += 0.1;
           }
           
