@@ -152,7 +152,7 @@ int main() {
           vector<double> next_y_vals;
           vector< vector<double> > next;
           
-          // Prediction
+          // Predictions
           Oracle oracle;
           oracle.predict(sensor_fusion, car_x, car_y, car_s, car_d, car_yaw, car_speed, map_waypoints_x, map_waypoints_y);
           
@@ -160,7 +160,7 @@ int main() {
           // Behavior module begins
           // Objectives:
           // 1) Maintain target speed
-          // 2) Avoid collisions from left, right, ahead and behind.
+          // 2) Avoid collisions from left, right, front
           
           vector< vector<Car> > lanes = oracle.predictions();
           
@@ -262,7 +262,7 @@ int main() {
           //cout << "Plan: " << plan << endl;
           //cout << "Left lane: " << leaders[0].speed/0.447 << " Center lane: " << leaders[1].speed/0.447 << " Right lane: " << leaders[2].speed/0.447 << endl;
           
-          if (car_speed / 0.447 >= trajectory_planner.roadspeed - 9.0) {
+          if (car_speed / 0.447 >= trajectory_planner.roadspeed - 10.0) {
             target_speed -= 0.05;
           }
           if (car_speed / 0.447 < trajectory_planner.roadspeed - 11.0) {
