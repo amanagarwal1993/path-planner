@@ -19,7 +19,7 @@ The prediction module outputs easy-to-process information so that the behaviour 
 
 This way we separate the logic of the code so that it is much more flexible and maintainable. With this separation of concerns, we can easily make changes which would otherwise be extremely hard to do if the code was all tangled together like spaghetti.
 
-##### Prediction
+#### Prediction
 The prediction class takes as input the sensor fusion data and the car's current status (position, speed etc). With this, it tells you: 
 1. Which cars are in which lane
 2. What is the speed of the vehicle right in front of it in any of the lanes
@@ -27,7 +27,7 @@ The prediction class takes as input the sensor fusion data and the car's current
 
 Armed with this information, we know what's happening on the road and can plan the most optimal manoeuvre.
 
-##### Behaviour Planning
+#### Behaviour Planning
 This module has 2 objectives: reach the destination as quickly as possible, while staying safe and avoiding risky decisions. Therefore, it is optimized to only change lanes when it is advantageous to do so. It gives as output any one of these 3 behaviours which is to be implemented by the car:
 1. Stay in lane at a target speed
 2. Turn Left
@@ -42,7 +42,7 @@ Now here's the overall decision making process:
 * As soon as there is a 4-second window, turn!
 * Once in the next lane, repeat the above steps.
 
-##### Trajectory Planning
+#### Trajectory Planning
 This class is updated with the input of the current state of the vehicle, and the "plan" as commanded by the behaviour planner. It has a private `drive()` function which outputs the set of X,Y points forming the required trajectory. Then the main function simply sends the points back to the simulator and the whole cycle continues!
 I used the Spline module to calculate smooth trajectories.
 
