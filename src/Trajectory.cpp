@@ -41,7 +41,7 @@ void TP::Update(double car_x, double car_y, double car_s, double car_d, double c
 
 
 // This function outputs trajectory points which make the car stay in the same lane at constant speed. These points will go straight to the output to simulator
-vector< vector<double> > TP::keep_lane() {
+vector< vector<double> > TP::drive() {
   
   double target_speed = this->target_speed;
   vector<double> nextx;
@@ -241,7 +241,7 @@ vector< vector<double> > TP::executePlan(string command) {
     throw(error);
   }
   
-  next = this->keep_lane();
+  next = this->drive();
   
   return next;
 }

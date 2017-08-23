@@ -202,6 +202,9 @@ int main() {
               // If current lane is still the fastest lane
               if (high_speed_lane == this_lane) {
                 cout << "Just stay in lane." << endl;
+                if (abs(leaders[this_lane].s - car_s) <= 15.0) {
+                  trajectory_planner.roadspeed = (leaders[this_lane].speed/0.447) - 5.0;
+                }
                 prepare_for_turn = false;
                 plan = "keep";
               }

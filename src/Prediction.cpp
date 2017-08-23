@@ -73,7 +73,7 @@ void Oracle::predict(vector< vector<double> > sensor_fusion, double car_x, doubl
       leading.car_id = -1;
       leading.s = 10000;
       leading.d = -10;
-      leading.speed = 100.0;
+      leading.speed = 50.0;
     }
     this->leaders.push_back(leading);
   }

@@ -31,7 +31,7 @@ private:
   double target_lane;
   vector<double> previous_x;
   vector<double> previous_y;
-  vector< vector<double> > keep_lane();
+  vector< vector<double> > drive();
 public:
   double roadspeed;
   vector<double> maps_s;
