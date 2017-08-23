@@ -190,7 +190,6 @@ int main() {
             else {
               trajectory_planner.roadspeed = leaders[this_lane].speed / 0.447;
               // Check which is fastest
-              //cout << "Consider turning..." << endl;
               int high_speed_lane = this_lane;
               for (int i=0; i<available_lanes.size(); i++) {
                 if (oracle.leading_cars()[available_lanes[i]].speed > leaders[high_speed_lane].speed) {
@@ -206,28 +205,11 @@ int main() {
                 prepare_for_turn = false;
                 plan = "keep";
               }
-              // Must change lane
+              // Else we must change lane
               else {
                 prepare_for_turn = true;
                 bool gap_open = true;
-                
-                // High speed lane is empty
-                if (lanes[high_speed_lane].size() == 0) {
-                  cout << "Fastest lane is empty! Turn!" << endl;
-                  trajectory_planner.roadspeed = 45.0 / 0.447;
-
-                  if (high_speed_lane < this_lane) {
-                    plan = "turnLeft";
-                    cout << "Turn Left" << endl;
-                  }
-                  else {
-                    plan = "turnRight";
-                    cout << "Turn Right" << endl;
-                  }
-                }
-                //
-                else {
-                  cout << "Fastest lane isn't empty, wait for gap to open" << endl;
+                  cout << "Check if there's an open gap for turning" << endl;
                   // car's rough position after 4 seconds
                   double future_s1 = car_s + (car_speed * 2.0);
                   double future_s2 = car_s + (car_speed * 4.0);
@@ -238,7 +220,7 @@ int main() {
                       gap_open = false;
                     }
                   }
-                  // Make the new plan
+                  // Change the plan
                   if (gap_open) {
                     trajectory_planner.roadspeed = leaders[high_speed_lane].speed / 0.447;
 
@@ -251,40 +233,30 @@ int main() {
                       cout << "Turn Right" << endl;
                     }
                   } else {
-                    cout << "Can't turn yet, another car within 15m" << endl;
+                    cout << "Can't turn yet; another car in range" << endl;
                     plan = "keep";
                   }
                 }
               }
             }
-          }
           
           //cout << "Plan: " << plan << endl;
           //cout << "Left lane: " << leaders[0].speed/0.447 << " Center lane: " << leaders[1].speed/0.447 << " Right lane: " << leaders[2].speed/0.447 << endl;
           
-          if (car_speed / 0.447 >= trajectory_planner.roadspeed - 10.0) {
-            target_speed -= 0.2;
+          if (car_speed / 0.447 >= trajectory_planner.roadspeed - 7.5) {
+            target_speed -= 0.225;
           }
-          if (car_speed / 0.447 < trajectory_planner.roadspeed - 12.0) {
-            target_speed += 0.1;
+          else if (car_speed / 0.447 < trajectory_planner.roadspeed - 9.5) {
+            target_speed += 0.15;
           }
           
           trajectory_planner.Update(car_x, car_y, car_s, car_d, car_yaw, car_speed, target_speed, previous_path_x, previous_path_y, map_waypoints_s, map_waypoints_x, map_waypoints_y);
           
           next = trajectory_planner.executePlan(plan);
           
-          
-          /*
-          for (int i=0; i< next[0].size(); i++) {
-            cout << next[0][i] << " " << next[1][i] << endl;
-          }
-          cout << "\n" << endl;
-          */
-          
           next_x_vals = next[0];
           next_y_vals = next[1];
           
-          // TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
           msgJson["next_x"] = next_x_vals;
           msgJson["next_y"] = next_y_vals;
 
